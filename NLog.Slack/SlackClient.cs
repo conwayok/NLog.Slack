@@ -36,9 +36,6 @@ namespace NLog.Slack
                             client.Proxy.Credentials =
                                 new NetworkCredential(_proxySettings.User, _proxySettings.Password);
                         }
-
-                        Console.WriteLine("my ip for slack is {0}",
-                            client.DownloadString("http://bot.whatismyipaddress.com/"));
                     }
 
                     client.Headers[HttpRequestHeader.ContentType] = "application/json";
