@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using NLog.Common;
 using NLog.Config;
+using NLog.Layouts;
 using NLog.Slack.Dtos;
 using NLog.Slack.Models;
 using NLog.Targets;
@@ -13,9 +14,14 @@ namespace NLog.Slack
     {
         [RequiredParameter] public string WebHookUrl { get; set; }
 
-        public ProxySettings Proxy { get; set; }
-
         public bool Compact { get; set; }
+
+        public bool UseProxy { get; set; }
+        public string ProxyHost { get; set; }
+        public int ProxyPort { get; set; }
+        public string ProxyUser { get; set; }
+        public string ProxyPassword { get; set; }
+
 
         public override IList<TargetPropertyWithContext> ContextProperties { get; } =
             new List<TargetPropertyWithContext>();
@@ -39,6 +45,24 @@ namespace NLog.Slack
                 ContextProperties.Add(new TargetPropertyWithContext("Process PID", Layout = "${processid}"));
             }
 
+            // validate proxy settings
+            if (UseProxy)
+            {
+                if (string.IsNullOrEmpty(ProxyHost))
+                    throw new ArgumentOutOfRangeException("ProxyHost", "ProxyHost must not be empty");
+
+                if (ProxyPort == 0)
+                    throw new ArgumentOutOfRangeException("ProxyPort", "ProxyPort must not be empty");
+
+                if (!string.IsNullOrEmpty(ProxyUser) && string.IsNullOrEmpty(ProxyPassword))
+                    throw new ArgumentOutOfRangeException("ProxyUser", "ProxyUser configured with no ProxyPassword");
+
+                if (!string.IsNullOrEmpty(ProxyPassword) && string.IsNullOrEmpty(ProxyUser))
+                    throw new ArgumentOutOfRangeException("ProxyPassword",
+                        "ProxyPassword configured with no ProxyUser");
+            }
+
+
             base.InitializeTarget();
         }
 
@@ -61,9 +85,14 @@ namespace NLog.Slack
 
             SlackMessageBuilder slack;
 
-            if (Proxy != null)
+            if (UseProxy)
             {
-                slack = SlackMessageBuilder.Build(WebHookUrl, Proxy)
+                var proxy = new ProxySettings
+                {
+                    Host = ProxyHost, Port = ProxyPort, User = ProxyUser, Password = ProxyPassword
+                };
+
+                slack = SlackMessageBuilder.Build(WebHookUrl, proxy)
                     .OnError(e => info.Continuation(e))
                     .WithMessage(message);
             }

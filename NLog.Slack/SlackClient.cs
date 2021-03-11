@@ -30,12 +30,15 @@ namespace NLog.Slack
                 {
                     if (_proxySettings != null)
                     {
-                        client.Proxy = new WebProxy(_proxySettings.ProxyHost, _proxySettings.ProxyPort);
-                        if (_proxySettings.ProxyUser != null && _proxySettings.ProxyPassword != null)
+                        client.Proxy = new WebProxy(_proxySettings.Host, _proxySettings.Port);
+                        if (_proxySettings.User != null && _proxySettings.Password != null)
                         {
                             client.Proxy.Credentials =
-                                new NetworkCredential(_proxySettings.ProxyUser, _proxySettings.ProxyPassword);
+                                new NetworkCredential(_proxySettings.User, _proxySettings.Password);
                         }
+
+                        Console.WriteLine("my ip for slack is {0}",
+                            client.DownloadString("http://bot.whatismyipaddress.com/"));
                     }
 
                     client.Headers[HttpRequestHeader.ContentType] = "application/json";

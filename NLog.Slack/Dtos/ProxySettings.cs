@@ -2,9 +2,9 @@
 {
     public class ProxySettings
     {
-        public string ProxyHost { get; set; }
-        public int ProxyPort { get; set; }
-        public string ProxyUser { get; set; }
-        public string ProxyPassword { get; set; }
+        public string Host { get; set; }
+        public int Port { get; set; }
+        public string User { get; set; }
+        public string Password { get; set; }
     }
 }
